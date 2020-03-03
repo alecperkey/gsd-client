@@ -1,5 +1,7 @@
 <template>
   <div>
+    <div v-if="$apollo.queries.todos.loading">Loading...</div>
+    <div v-if="error">{{ error }}</div>
     <div class="todoListwrapper">
       <TodoItem v-bind:todos="filteredTodos" v-bind:type="type" />
     </div>
@@ -36,7 +38,10 @@ export const GET_MY_TODOS = gql`
 export default {
   apollo: {
     todos: {
-      query: GET_MY_TODOS
+      query: GET_MY_TODOS,
+      error(error) {
+        this.error = JSON.stringify(error.message);
+      }
     }
   },
   components: {
@@ -47,7 +52,9 @@ export default {
     return {
       type: "private",
       filterType: "all",
-      todos: [] // will be populated via apolloProvider
+      // below populated via apolloProvider async internals
+      todos: [],
+      error: null
     };
   },
   computed: {
