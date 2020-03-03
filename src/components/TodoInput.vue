@@ -1,27 +1,58 @@
 <template>
   <div class="formInput">
-    <input 
-	class="input" 
-	placeholder="What needs to be done?" 
-	v-model="newTodo"
-	@keyup.enter="addTodo"
+    <input
+      class="input"
+      placeholder="What needs to be done?"
+      v-model="newTodo"
+      @keyup.enter="addTodo"
     />
     <i class="downArrow fa fa-angle-right" />
   </div>
 </template>
 
 <script>
-  export default {
-    props: ['type'],
-    data() {
-      return {
-        newTodo: '',
+import gql from "graphql-tag";
+
+const ADD_TODO = gql`
+  mutation insert_todos($todo: String!, $isPublic: Boolean!) {
+    insert_todos(objects: { title: $todo, is_public: $isPublic }) {
+      affected_rows
+      returning {
+        id
+        title
+        is_completed
+        created_at
+        is_public
       }
-    },
-    methods: {
-      addTodo: function () {
-        // insert new todo into db
-      },
     }
   }
+`;
+
+export default {
+  props: ["type"],
+  data() {
+    return {
+      newTodo: ""
+    };
+  },
+  methods: {
+    addTodo: function() {
+      // insert new todo into db
+      const title = this.newTodo && this.newTodo.trim();
+      const isPublic = this.type === "public" ? true : false;
+      this.$apollo.mutate({
+        mutation: ADD_TODO,
+        variables: {
+          todo: title,
+          isPublic: isPublic
+        },
+        update: (cache, { data: { insert_todos } }) => {
+          // Read the data from our cache for this query.
+          // eslint-disable-next-line
+          console.log(insert_todos);
+        }
+      });
+    }
+  }
+};
 </script>
