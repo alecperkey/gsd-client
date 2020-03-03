@@ -12,6 +12,7 @@
 
 <script>
 import gql from "graphql-tag";
+import { GET_MY_TODOS } from "./TodoPrivateList.vue";
 
 const ADD_TODO = gql`
   mutation insert_todos($todo: String!, $isPublic: Boolean!) {
@@ -48,7 +49,21 @@ export default {
         },
         update: (cache, { data: { insert_todos } }) => {
           // Read the data from our cache for this query.
-          // eslint-disable-next-line
+          try {
+            if (this.type === "private") {
+              const data = cache.readQuery({
+                query: GET_MY_TODOS
+              });
+              const insertedTodo = insert_todos.returning;
+              data.todos.splice(0, 0, insertedTodo[0]);
+              cache.writeQuery({
+                query: GET_MY_TODOS,
+                data
+              });
+            }
+          } catch (e) {
+            console.error(e);
+          }
           console.log(insert_todos);
         }
       });
