@@ -67,6 +67,8 @@ export default {
           console.log(insert_todos);
         }
       });
+      // reset input field
+      this.newTodo = "";
     }
   }
 };
